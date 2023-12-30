@@ -1,0 +1,307 @@
+:root {
+  /* Colors */
+  --aqua: #7fdbff;
+  --black: #111111;
+  --blue: #0074d9;
+  --fuchsia: #f012be;
+  --gray: #aaaaaa;
+  --green: #2ecc40;
+  --lime: #01ff70;
+  --maroon: #85144b;
+  --navy: #001f3f;
+  --olive: #3d9970;
+  --orange: #ff851b;
+  --purple: #b10dc9;
+  --red: #ff4136;
+  --silver: #dddddd;
+  --teal: #39cccc;
+  --white: #ffffff;
+  --yellow: #ffdc00;
+  --dark: #111c;
+  --light: #fffc;
+
+  /* Fonts */
+  --humanist-fonts: Seravek, 'Gill Sans Nova', Ubuntu, Calibri, 'DejaVu Sans', source-sans-pro, sans-serif;
+
+  /* Sizes */
+  --huge: 4rem;
+  --large: 2rem;
+  --medium: 1rem;
+  --small: 0.5rem;
+  --tiny: 0.25rem;
+
+  /* Speeds */
+  --fast: 50ms;
+  --slow: 150ms;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/*
+.-aqua { color: var(--aqua) }
+.-black { color: var(--black) }
+.-blue { color: var(--blue) }
+.-fuchsia { color: var(--fuchsia) }
+.-gray { color: var(--gray) }
+.-green { color: var(--green) }
+.-lime { color: var(--lime) }
+.-maroon { color: var(--maroon) }
+.-navy { color: var(--navy) }
+.-olive { color: var(--olive) }
+.-orange { color: var(--orange) }
+.-purple { color: var(--purple) }
+.-red { color: var(--red) }
+.-silver { color: var(--silver) }
+.-teal { color: var(--teal) }
+.-white { color: var(--white) }
+.-yellow { color: var(--yellow) }
+*/
+
+*[data-hidden] {
+  display: none;
+}
+
+body {
+  background-color: var(--silver);
+  color: var(--black);
+  font-family: var(--humanist-fonts);
+  font-size: 16px;
+  line-height: 1.5;
+  margin: 0 auto var(--medium);
+}
+
+button {
+  background-color: var(--white);
+  border: none;
+  border-radius: var(--tiny);
+  cursor: pointer;
+  font: inherit;
+  min-width: 5rem;
+  padding: var(--small) var(--medium);
+
+  &:disabled {
+    color: inherit;
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  &.aqua {
+    background-color: var(--aqua);
+    color: var(--dark);
+  }
+
+  &.blue {
+    background-color: var(--blue);
+    color: var(--light);
+  }
+
+  &.fuchsia {
+    background-color: var(--fuchsia);
+    color: var(--light);
+  }
+
+  &.green {
+    background-color: var(--green);
+    color: var(--dark);
+  }
+
+  &.lime {
+    background-color: var(--lime);
+    color: var(--dark);
+  }
+
+  &.maroon {
+    background-color: var(--maroon);
+    color: var(--light);
+  }
+
+  &.navy {
+    background-color: var(--navy);
+    color: var(--light);
+  }
+
+  &.olive {
+    background-color: var(--olive);
+    color: var(--light);
+  }
+
+  &.orange {
+    background-color: var(--orange);
+    color: var(--dark);
+  }
+
+  &.purple {
+    background-color: var(--purple);
+    color: var(--light);
+  }
+
+  &.red {
+    background-color: var(--red);
+    color: var(--dark);
+  }
+
+  &.teal {
+    background-color: var(--teal);
+    color: var(--dark);
+  }
+
+  &.yellow {
+    background-color: var(--yellow);
+    color: var(--dark);
+  }
+}
+
+canvas {
+  background-color: var(--white);
+  border: var(--tiny) solid var(--gray);
+  border-radius: var(--medium);
+  height: 640px; /* 40rem */
+  transition: border-color var(--slow) ease-out;
+  width: 640px; /* 40rem */
+
+  &.aqua { border-color: var(--aqua) }
+  &.blue { border-color: var(--blue) }
+  &.fuchsia { border-color: var(--fuchsia) }
+  &.green { border-color: var(--green) }
+  &.lime { border-color: var(--lime) }
+  &.maroon { border-color: var(--maroon) }
+  &.navy { border-color: var(--navy) }
+  &.olive { border-color: var(--olive) }
+  &.orange { border-color: var(--orange) }
+  &.purple { border-color: var(--purple) }
+  &.red { border-color: var(--red) }
+  &.teal { border-color: var(--teal) }
+  &.yellow { border-color: var(--yellow) }
+}
+
+h2 {
+  margin: 0;
+
+  &:not(:first-child) {
+    margin-top: var(--medium);
+  }
+}
+
+input {
+  background-color: var(--white);
+  border: 2px solid var(--white);
+  border-radius: var(--tiny);
+  font: inherit;
+  line-height: 1.75;
+  outline: none;
+  padding: 0 var(--small);
+  transition:  border-color var(--fast) ease-out;
+
+  &:focus {
+    border-color: var(--fuchsia);
+  }
+}
+
+label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+main {
+  column-gap: var(--medium);
+  display: flex;
+  justify-content: center;
+}
+
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding-left: 0;
+
+  li {
+    align-items: center;
+    display: flex;
+  }
+}
+
+.control {
+  display: flex;
+  flex-direction: column;
+  max-width: 15rem;
+  width: 100%;
+}
+
+#GameInfo {
+  align-items: flex-end;
+  column-gap: var(--medium);
+  display: flex;
+  justify-content: center;
+  margin: var(--large) 20% var(--large) 0;
+}
+
+#GameMasters li {
+  background-color: var(--black);
+  border-radius: var(--tiny);
+  color: var(--white);
+  padding: 0 var(--small);
+}
+
+#NameEntry {
+  background-color: var(--silver);
+  border: none;
+  border-radius: var(--medium);
+  font-weight: 500;
+  line-height: 1.75;
+
+  form {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    gap: var(--medium);
+  }
+
+  &::backdrop {
+    background-color: #aaa; /* Gray */
+  }
+}
+
+#Players li {
+  background-color: var(--gray);
+  border-radius: var(--tiny);
+  color: var(--black);
+  font-weight: 500;
+  line-height: 1.75;
+  padding: 0 var(--small);
+  transition: all var(--slow) ease-out;
+  /* TODO transition-property: */
+
+  &.-active {
+    border-bottom-left-radius: 0;
+    border-top-left-radius: 0;
+    font-weight: 700;
+    margin-left: calc(0px - var(--medium));
+    margin-right: var(--medium);
+  }
+
+  &:not(:first-of-type) {
+    margin-top: var(--tiny);
+  }
+}
+
+#RegistrationForm {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--huge) 0 var(--large);
+  row-gap: var(--large);
+}
+
+#Users {
+  max-width: 12rem;
+  pointer-events: none;
+  width: 100%;
+}
+
+@media (prefers-color-scheme: dark) {
+  /* TODO */
+}

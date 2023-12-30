@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!--
+    <meta name="description" content="" />
+    -->
+    <meta name="theme-color" content="#f012be" />
+    <meta name="viewport" content="initial-scale=1, width=device-width" />
+    <title>Fake Artist</title>
+    <!--
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.json" />
+    -->
+    <link rel="stylesheet" href="styles.css" />
+    <script src="main.js" type="module"></script>
+  </head>
+  <body>
+    <section data-hidden data-page="registration">
+      <form id="RegistrationForm">
+        <div class="control">
+          <label for="Name">Name</label>
+          <input id="Name" placeholder="Enter your name" type="text" />
+        </div>
+        <button class="green" id="Join" disabled type="submit">Join!</button>
+      </form>
+    </section>
+    <section data-hidden data-page="game">
+      <form id="GameInfo">
+        <div class="control">
+          <label for="Category">Category</label>
+          <input disabled id="Category" type="text" />
+        </div>
+        <div class="control">
+          <label for="Word">Word</label>
+          <input disabled id="Word" type="text" />
+        </div>
+      </form>
+      <main>
+        <canvas height="640" width="640"></canvas>
+        <div id="Users">
+          <h2>Game Master</h2>
+          <ul id="GameMasters">
+            <li>Josh</li>
+          </ul>
+          <div id="GMControls">
+            <button>Start</button>
+            <button>Stop</button>
+            <button>Quit</button>
+          </div>
+          <h2 id="PlayersTitle">Players</h2>
+          <ul id="Players"></ul>
+          <!--
+            <li class="aqua active">Aqua</li>
+            <li class="blue">Blue</li>
+            <li class="fuchsia">Fuchsia</li>
+            <li class="green">Green</li>
+            <li class="lime">Lime</li>
+            <li class="maroon">Maroon</li>
+            <li class="navy">Navy</li>
+            <li class="olive">Olive</li>
+            <li class="orange">Orange</li>
+            <li class="purple">Purple</li>
+            <li class="red">Red</li>
+            <li class="teal">Teal</li>
+            <li class="yellow">Yellow</li>
+          -->
+          <h2 id="SpectatorsTitle">Spectators</h2>
+          <ul id="Spectators"></ul>
+          <!--
+            <li>Someone</li>
+            <li>Someone Else</li>
+          -->
+        </ul>
+      </main>
+    </section>
+  </body>
+</html>
+
