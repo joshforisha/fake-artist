@@ -97,6 +97,7 @@ function register(name) {
 }
 
 function send(data) {
+  if (!webSocket) return new Promise.reject()
   const encodedData = JSON.stringify({ ...data, id: state.id })
   return new Promise((resolve) => {
     if (webSocket.readyState === 1) {
@@ -129,14 +130,14 @@ function stopDrawing(event) {
   if (!drawing) return
 
   drawing = false
-  // TODO: Send points
+  send({ action: 'draw', points })
 }
 
 function tryToConnect() {
   webSocket = new WebSocket('ws://localhost:8000')
 
   webSocket.addEventListener('close', () => {
-    hide(gamePage)
+    hide(registrationPage, gamePage)
     state = initialState
     setTimeout(tryToConnect, 3000)
   })

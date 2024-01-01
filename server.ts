@@ -4,6 +4,7 @@ enum Color {
   Aqua = '#7fdbff',
   Blue = '#0074d9',
   Fuchsia = '#f012be',
+  Gray = '#aaaaaa',
   Green = '#2ecc40',
   Lime = '#01ff70',
   Maroon = '#85144b',
@@ -16,36 +17,16 @@ enum Color {
   Yellow = '#ffdc00'
 }
 
-const shapes = [
-  {
-    color: draw(Object.values(Color)),
-    points: [
-      [374, 131], [374, 131], [376, 130], [377, 129], [378, 129], [380, 128],
-      [382, 127], [383, 127], [385, 127], [387, 126], [388, 126], [390, 126],
-      [391, 126], [393, 126], [394, 127], [396, 127], [399, 129], [402, 132],
-      [405, 136], [407, 141], [409, 147], [411, 152], [412, 157], [412, 161],
-      [412, 163], [412, 164], [412, 165], [412, 166], [412, 167], [412, 167],
-      [411, 168], [410, 169], [408, 170], [406, 170], [405, 171], [403, 172],
-      [400, 172], [398, 172], [396, 172], [394, 172], [392, 172], [391, 172],
-      [389, 171], [388, 171], [387, 169], [385, 168], [384, 167], [383, 165],
-      [382, 163], [381, 161], [380, 160], [379, 158], [379, 156], [378, 154],
-      [377, 152], [377, 150], [376, 149], [376, 147], [375, 146], [375, 144],
-      [374, 143], [374, 141], [374, 140], [373, 138], [372, 136], [372, 135],
-      [372, 133], [371, 132], [371, 131], [371, 130], [370, 129], [370, 128],
-      [370, 128], [370, 127], [370, 127]
-    ]
-  }
-]
-
 let category = ''
 let connections = []
 let isGameActive = false
+let shapes = []
 let word = ''
 
 
 // Functions -------------------------------------------------------------------
 
-function assignGM({ id, name }) {
+function assignGM({ id }) {
   // TODO: Ensure there's no current GM
 
   connections = connections.map((conn) => {
@@ -68,6 +49,15 @@ function draw(xs) {
   return xs[Math.floor(Math.random() * xs.length)]
 }
 
+function drawShape({ id, points }) {
+  // TODO: Ensure user is active
+  // TODO: Progress turn if in-game
+
+  const { color } = connections.find((c) => c.id === id)
+  shapes.push({ color, points })
+  return { shapes }
+}
+
 function extract(...keys) {
   return (x) => keys.reduce((y, key) => ({
     ...y,
@@ -80,10 +70,12 @@ function registerUser({ id, name, socket }) {
   // TODO: Check for number of joined players
   // TODO: Check for in-progress game
 
-  connections.push({ id, name, playing: true, socket })
+  const color = Color.Gray
+  connections.push({ color, id, name, playing: true, socket })
 
   return {
     category,
+    color,
     id,
     shapes,
     word: '?',
@@ -98,7 +90,7 @@ function scry(xs, pred) {
   }, [[], []])
 }
 
-function unassignGM({ id, name }) {
+function unassignGM({ id }) {
   // TODO: Ensure requesting user is the GM
 
   connections = connections.map((conn) => {
@@ -149,14 +141,17 @@ Deno.serve((request) => {
 
     switch (action) {
       case 'become-gm':
-        broadcast(assignGM({ id, socket }))
+        broadcast(assignGM({ id }))
+        break
+      case 'draw':
+        broadcast(drawShape({ id, points: data.points }))
         break
       case 'register':
         send(registerUser({ id, name: data.name, socket }))
         broadcast({ ...users() }, (c) => c.id !== id)
         break
       case 'quit-gm':
-        broadcast(unassignGM({ id, socket }))
+        broadcast(unassignGM({ id }))
         break
     }
   }
