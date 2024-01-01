@@ -34,7 +34,7 @@ function assignGM({ id }) {
     return { ...conn, isGM: true }
   })
 
-  return { ...users() }
+  return users()
 }
 
 function broadcast(data, filter) {
@@ -78,7 +78,6 @@ function registerUser({ id, name, socket }) {
     color,
     id,
     shapes,
-    word: '?',
     ...users()
   }
 }
@@ -90,6 +89,11 @@ function scry(xs, pred) {
   }, [[], []])
 }
 
+function setCategory({ id, value }) {
+  category = value
+  return { category }
+}
+
 function unassignGM({ id }) {
   // TODO: Ensure requesting user is the GM
 
@@ -98,7 +102,10 @@ function unassignGM({ id }) {
     return { ...conn, isGM: false }
   })
 
-  return { ...users() }
+  category = ''
+  word = ''
+
+  return { category, word, ...users() }
 }
 
 function users() {
@@ -107,7 +114,9 @@ function users() {
   const gameMaster = gms.at(0)
 
   return {
-    gameMaster: gameMaster && { id: gameMaster.id, name: gameMaster.name },
+    gameMaster: gameMaster
+      ? { id: gameMaster.id, name: gameMaster.name }
+      : null,
     players: players.map(({ color, name }) => ({ color, name })),
     spectators: spectators.map(({ name }) => ({ name }))
   }
@@ -152,6 +161,9 @@ Deno.serve((request) => {
         break
       case 'quit-gm':
         broadcast(unassignGM({ id }))
+        break
+      case 'set-category':
+        broadcast(setCategory({ id, value: data.value }))
         break
     }
   }

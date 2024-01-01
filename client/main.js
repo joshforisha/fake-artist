@@ -133,6 +133,11 @@ function stopDrawing(event) {
   send({ action: 'draw', points })
 }
 
+function toggle(pred, ...elements) {
+  if (pred) enable(...elements)
+  else disable(...elements)
+}
+
 function tryToConnect() {
   webSocket = new WebSocket('ws://localhost:8000')
 
@@ -152,13 +157,15 @@ function tryToConnect() {
     enable(nameInput, joinButton)
     show(registrationPage)
     nameInput.focus()
-    // joinButton.click() // FIXME
+
+    // FIXME (Temporary testing)
+    nameInput.value = 'Josh'
+    joinButton.click()
   })
 }
 
 function update(newState) {
-  state = { ...state, ...JSON.parse(newState) }
-  console.log(state)
+  if (newState) state = { ...state, ...JSON.parse(newState) }
 
   // Prompts
   categoryInput.value = state.category
@@ -184,9 +191,15 @@ function update(newState) {
       textContent: state.gameMaster.name
     }))
     if (state.gameMaster.id === state.id) {
-      enableAndShow(startButton)
+      enable(categoryInput, wordInput)
+      enableAndShow(quitGMButton)
+      toggle(validText(state.category) && validText(wordInput.value), startButton)
+      show(startButton)
+    } else {
+      wordInput.value = state.word
     }
   } else {
+    disable(categoryInput, wordInput)
     enableAndShow(becomeGMButton)
   }
 
@@ -208,6 +221,13 @@ function update(newState) {
   }
 }
 
+function validText(string) {
+  if (string.length < 1) return false
+  if (string.startsWith(' ')) return false
+  if (string.endsWith(' ')) return false
+  return true
+}
+
 
 // Events ----------------------------------------------------------------------
 
@@ -215,6 +235,14 @@ registrationForm.addEventListener('submit', (event) => {
   event.preventDefault()
   disable(nameInput, joinButton)
   send({ action: 'register', name: nameInput.value })
+})
+
+categoryInput.addEventListener('input', (event) => {
+  send({ action: 'set-category', value: event.target.value })
+})
+
+wordInput.addEventListener('input', (event) => {
+  update()
 })
 
 canvas.addEventListener('pointercancel', stopDrawing)
@@ -229,11 +257,8 @@ canvas.addEventListener('touchmove', moveDrawing)
 canvas.addEventListener('touchstart', startDrawing)
 
 nameInput.addEventListener('input', (event) => {
-  const value = event.target.value
-  if (value.length < 1 || value.startsWith(' ') || value.endsWith(' ')) {
-    disable(joinButton)
-  }
-  else enable(joinButton)
+  if (validText(event.target.value)) enable(joinButton)
+  else disable(joinButton)
 })
 
 becomeGMButton.addEventListener('click', () => {
