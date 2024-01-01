@@ -21,12 +21,12 @@ const wordInput = $('#Word')
 
 // Globals
 const context = canvas.getContext('2d')
-const webSocket = new WebSocket('ws://localhost:8000')
+let webSocket
 
 // Local state
 let drawing = false // Flag for drawing motion
 let points = [] // Points of local drawn stroke
-let state = {
+const initialState = {
   category: '',
   color: '#aaaaaa',
   gameMaster: null,
@@ -36,9 +36,8 @@ let state = {
   spectators: [],
   word: ''
 }
+let state = initialState
 
-/* Test drawing
-*/
 
 // Functions -------------------------------------------------------------------
 
@@ -95,19 +94,6 @@ function register(name) {
     action: 'register',
     name
   })
-
-  return new Promise((resolve) => {
-    if (webSocket.readyState === 1) {
-      webSocket.send(data)
-    }
-    resolve({
-      gameMasterName: 'Master of the Game',
-      id: crypto.randomUUID(),
-      players: [
-        { name }
-      ]
-    })
-  })
 }
 
 function send(data) {
@@ -144,6 +130,29 @@ function stopDrawing(event) {
 
   drawing = false
   // TODO: Send points
+}
+
+function tryToConnect() {
+  webSocket = new WebSocket('ws://localhost:8000')
+
+  webSocket.addEventListener('close', () => {
+    hide(gamePage)
+    state = initialState
+    setTimeout(tryToConnect, 3000)
+  })
+
+  webSocket.addEventListener('message', ({ data }) => {
+    hide(registrationPage)
+    show(gamePage)
+    update(data)
+  })
+
+  webSocket.addEventListener('open', () => {
+    enable(nameInput, joinButton)
+    show(registrationPage)
+    nameInput.focus()
+    // joinButton.click() // FIXME
+  })
 }
 
 function update(newState) {
@@ -201,12 +210,6 @@ function update(newState) {
 
 // Events ----------------------------------------------------------------------
 
-webSocket.addEventListener('message', ({ data }) => {
-  hide(registrationPage)
-  show(gamePage)
-  update(data)
-})
-
 registrationForm.addEventListener('submit', (event) => {
   event.preventDefault()
   disable(nameInput, joinButton)
@@ -244,9 +247,6 @@ quitGMButton.addEventListener('click', () => {
 // Initialization --------------------------------------------------------------
 
 context.lineWidth = 5
-context.strokeStyle = '#7fdbff' // FIXME
+context.strokeStyle = state.color
 
-webSocket.addEventListener('open', () => {
-  show(registrationPage)
-  // joinButton.click() // FIXME
-})
+tryToConnect()
