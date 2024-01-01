@@ -157,9 +157,9 @@ canvas {
   background-color: var(--white);
   border: var(--tiny) solid var(--gray);
   border-radius: var(--medium);
-  height: 640px; /* 40rem */
+  height: 640px;
   transition: border-color var(--slow) ease-out;
-  width: 640px; /* 40rem */
+  width: 640px;
 
   &.aqua { border-color: var(--aqua) }
   &.blue { border-color: var(--blue) }
@@ -245,23 +245,10 @@ ul {
   padding: 0 var(--small);
 }
 
-#NameEntry {
-  background-color: var(--silver);
-  border: none;
-  border-radius: var(--medium);
-  font-weight: 500;
-  line-height: 1.75;
-
-  form {
-    align-items: center;
-    display: flex;
-    flex-direction: column;
-    gap: var(--medium);
-  }
-
-  &::backdrop {
-    background-color: #aaa; /* Gray */
-  }
+#GMControls {
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--small);
 }
 
 #Players li {
@@ -298,7 +285,6 @@ ul {
 
 #Users {
   max-width: 12rem;
-  pointer-events: none;
   width: 100%;
 }
 

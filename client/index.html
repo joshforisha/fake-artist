@@ -24,7 +24,7 @@
           <label for="Name">Name</label>
           <input id="Name" placeholder="Enter your name" type="text" />
         </div>
-        <button class="green" id="Join" disabled type="submit">Join!</button>
+        <button class="green" id="Join" type="submit">Join!</button>
       </form>
     </section>
     <section data-hidden data-page="game">
@@ -42,37 +42,17 @@
         <canvas height="640" width="640"></canvas>
         <div id="Users">
           <h2>Game Master</h2>
-          <ul id="GameMasters">
-            <li>Josh</li>
-          </ul>
+          <ul id="GameMasters"></ul>
           <div id="GMControls">
-            <button>Start</button>
-            <button>Stop</button>
-            <button>Quit</button>
+            <button id="BecomeGM">Become GM</button>
+            <button id="Start">Start</button>
+            <button id="Stop">Stop</button>
+            <button id="QuitGM">Quit GM</button>
           </div>
           <h2 id="PlayersTitle">Players</h2>
           <ul id="Players"></ul>
-          <!--
-            <li class="aqua active">Aqua</li>
-            <li class="blue">Blue</li>
-            <li class="fuchsia">Fuchsia</li>
-            <li class="green">Green</li>
-            <li class="lime">Lime</li>
-            <li class="maroon">Maroon</li>
-            <li class="navy">Navy</li>
-            <li class="olive">Olive</li>
-            <li class="orange">Orange</li>
-            <li class="purple">Purple</li>
-            <li class="red">Red</li>
-            <li class="teal">Teal</li>
-            <li class="yellow">Yellow</li>
-          -->
           <h2 id="SpectatorsTitle">Spectators</h2>
           <ul id="Spectators"></ul>
-          <!--
-            <li>Someone</li>
-            <li>Someone Else</li>
-          -->
         </ul>
       </main>
     </section>

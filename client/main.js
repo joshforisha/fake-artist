@@ -2,7 +2,10 @@ const $ = (s) => document.querySelector(s)
 const $$ = (s) => document.querySelectorAll(s)
 
 // Elements
+const becomeGMButton = $('#BecomeGM')
 const canvas = $('canvas')
+const categoryInput = $('#Category')
+const gameMastersList = $('#GameMasters')
 const gamePage = $('section[data-page="game"]')
 const joinButton = $('#Join')
 const nameInput = $('#Name')
@@ -11,42 +14,25 @@ const registrationForm = $('#RegistrationForm')
 const registrationPage = $('section[data-page="registration"]')
 const spectatorsList = $('#Spectators')
 const spectatorsTitle = $('#SpectatorsTitle')
+const startButton = $('#Start')
+const stopButton = $('#Stop')
+const quitGMButton = $('#QuitGM')
+const wordInput = $('#Word')
 
 // Globals
 const context = canvas.getContext('2d')
-// TODO const websocket = new WebSocket('ws://localhost:8080')
-
-const testShapes = [
-  {
-    color: '',
-    points: [
-      [374, 131], [374, 131], [376, 130], [377, 129], [378, 129], [380, 128],
-      [382, 127], [383, 127], [385, 127], [387, 126], [388, 126], [390, 126],
-      [391, 126], [393, 126], [394, 127], [396, 127], [399, 129], [402, 132],
-      [405, 136], [407, 141], [409, 147], [411, 152], [412, 157], [412, 161],
-      [412, 163], [412, 164], [412, 165], [412, 166], [412, 167], [412, 167],
-      [411, 168], [410, 169], [408, 170], [406, 170], [405, 171], [403, 172],
-      [400, 172], [398, 172], [396, 172], [394, 172], [392, 172], [391, 172],
-      [389, 171], [388, 171], [387, 169], [385, 168], [384, 167], [383, 165],
-      [382, 163], [381, 161], [380, 160], [379, 158], [379, 156], [378, 154],
-      [377, 152], [377, 150], [376, 149], [376, 147], [375, 146], [375, 144],
-      [374, 143], [374, 141], [374, 140], [373, 138], [372, 136], [372, 135],
-      [372, 133], [371, 132], [371, 131], [371, 130], [370, 129], [370, 128],
-      [370, 128], [370, 127], [370, 127]
-    ]
-  }
-]
+const webSocket = new WebSocket('ws://localhost:8000')
 
 // Local state
 let drawing = false // Flag for drawing motion
 let points = [] // Points of local drawn stroke
 let state = {
   category: '',
-  color: null,
-  gameMasterName: null,
+  color: '#aaaaaa',
+  gameMaster: null,
   id: null,
   players: [],
-  shapes: testShapes, // FIXME: Use data from server, initially []
+  shapes: [],
   spectators: [],
   word: ''
 }
@@ -62,10 +48,20 @@ function disable(...elements) {
   })
 }
 
+function disableAndHide(...elements) {
+  disable(...elements)
+  hide(...elements)
+}
+
 function enable(...elements) {
   elements.forEach((element) => {
     element.removeAttribute('disabled')
   })
+}
+
+function enableAndShow(...elements) {
+  enable(...elements)
+  show(...elements)
 }
 
 function h(elementType, attributes = {}, children = []) {
@@ -95,9 +91,15 @@ function moveDrawing(event) {
 }
 
 function register(name) {
-  // TODO: Get initial state from server side
+  send({
+    action: 'register',
+    name
+  })
 
   return new Promise((resolve) => {
+    if (webSocket.readyState === 1) {
+      webSocket.send(data)
+    }
     resolve({
       gameMasterName: 'Master of the Game',
       id: crypto.randomUUID(),
@@ -105,6 +107,21 @@ function register(name) {
         { name }
       ]
     })
+  })
+}
+
+function send(data) {
+  const encodedData = JSON.stringify({ ...data, id: state.id })
+  return new Promise((resolve) => {
+    if (webSocket.readyState === 1) {
+      webSocket.send(encodedData)
+      resolve()
+    }
+
+    webSocket.addEventListener('open', () => {
+      webSocket.send(encodedData)
+      resolve()
+    }, { once: true })
   })
 }
 
@@ -129,14 +146,47 @@ function stopDrawing(event) {
   // TODO: Send points
 }
 
-function tryWebSocket() {
-  // TODO: Open and monitor WebSocket connection with promises
-}
-
 function update(newState) {
-  state = { ...state, newState }
-  // TODO: Update elements with new state data
+  state = { ...state, ...JSON.parse(newState) }
+  console.log(state)
 
+  // Prompts
+  categoryInput.value = state.category
+
+  // Canvas
+  context.clearRect(0, 0, 640, 640)
+  for (const { color, points } of state.shapes) {
+    context.strokeStyle = color
+    context.beginPath()
+    context.moveTo(points[0][0], points[0][1])
+    for (const [x, y] of points.slice(1)) {
+      context.lineTo(x, y)
+      context.stroke()
+    }
+  }
+  context.strokeStyle = state.color
+
+  // Game Master
+  gameMastersList.innerHTML = ''
+  disableAndHide(becomeGMButton, startButton, stopButton, quitGMButton)
+  if (state.gameMaster) {
+    gameMastersList.appendChild(h('li', {
+      textContent: state.gameMaster.name
+    }))
+    if (state.gameMaster.id === state.id) {
+      enableAndShow(startButton)
+    }
+  } else {
+    enableAndShow(becomeGMButton)
+  }
+
+  // Players
+  playersList.innerHTML = ''
+  for (const { name } of state.players) {
+    playersList.appendChild(h('li', { textContent: name }))
+  }
+
+  // Spectators
   if (state.spectators.length > 0) {
     spectatorsList.innerHTML = ''
     for (const spectator of state.spectators) {
@@ -150,6 +200,18 @@ function update(newState) {
 
 
 // Events ----------------------------------------------------------------------
+
+webSocket.addEventListener('message', ({ data }) => {
+  hide(registrationPage)
+  show(gamePage)
+  update(data)
+})
+
+registrationForm.addEventListener('submit', (event) => {
+  event.preventDefault()
+  disable(nameInput, joinButton)
+  send({ action: 'register', name: nameInput.value })
+})
 
 canvas.addEventListener('pointercancel', stopDrawing)
 canvas.addEventListener('pointerdown', startDrawing)
@@ -170,19 +232,12 @@ nameInput.addEventListener('input', (event) => {
   else enable(joinButton)
 })
 
-registrationForm.addEventListener('submit', async (event) => {
-  event.preventDefault()
-  disable(nameInput, joinButton)
-  try {
-    const initialState = await register(nameInput.value))
-    update(initialState)
-    hide(registrationPage)
-    show(gamePage)
-  } catch (error) {
-    // TODO: Handle displaying error message
-    console.error(error)
-    enable(nameInput, joinButton)
-  }
+becomeGMButton.addEventListener('click', () => {
+  send({ action: 'become-gm' })
+})
+
+quitGMButton.addEventListener('click', () => {
+  send({ action: 'quit-gm' })
 })
 
 
@@ -191,4 +246,7 @@ registrationForm.addEventListener('submit', async (event) => {
 context.lineWidth = 5
 context.strokeStyle = '#7fdbff' // FIXME
 
-show(registrationPage)
+webSocket.addEventListener('open', () => {
+  show(registrationPage)
+  // joinButton.click() // FIXME
+})
