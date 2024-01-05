@@ -20,6 +20,25 @@ const quitGMButton = $('#QuitGM')
 const wordInput = $('#Word')
 
 // Globals
+const HexColor = {
+  aqua: '#7fdbff',
+  black: '#111111',
+  blue: '#0074d9',
+  fuchsia: '#f012be',
+  gray: '#aaaaaa',
+  green: '#2ecc40',
+  lime: '#01ff70',
+  maroon: '#85144b',
+  navy: '#001f3f',
+  olive: '#3d9970',
+  orange: '#ff851b',
+  purple: '#b10dc9',
+  red: '#ff4136',
+  silver: '#dddddd',
+  teal: '#39cccc',
+  white: '#ffffff',
+  yellow: '#ffdc00'
+}
 const context = canvas.getContext('2d')
 let webSocket
 
@@ -28,7 +47,7 @@ let drawing = false // Flag for drawing motion
 let points = [] // Points of local drawn stroke
 const initialState = {
   category: '',
-  color: '#aaaaaa',
+  color: 'gray',
   gameMaster: null,
   id: null,
   players: [],
@@ -66,8 +85,16 @@ function enableAndShow(...elements) {
 function h(elementType, attributes = {}, children = []) {
   const element = document.createElement(elementType)
   for (const [key, value] of Object.entries(attributes)) {
-    if (key === 'textContent') element.textContent = value
-    else element.setAttribute(key, value)
+    switch (key) {
+      case 'class':
+        element.classList.add(value)
+        break
+      case 'textContent':
+        element.textContent = value
+        break
+      default:
+        element.setAttribute(key, value)
+    }
   }
   for (const child of children) {
     element.appendChild(child)
@@ -166,6 +193,7 @@ function tryToConnect() {
 
 function update(newState) {
   if (newState) state = { ...state, ...JSON.parse(newState) }
+  console.log(state)
 
   // Prompts
   categoryInput.value = state.category
@@ -173,7 +201,7 @@ function update(newState) {
   // Canvas
   context.clearRect(0, 0, 640, 640)
   for (const { color, points } of state.shapes) {
-    context.strokeStyle = color
+    context.strokeStyle = HexColor[color]
     context.beginPath()
     context.moveTo(points[0][0], points[0][1])
     for (const [x, y] of points.slice(1)) {
@@ -181,7 +209,7 @@ function update(newState) {
       context.stroke()
     }
   }
-  context.strokeStyle = state.color
+  context.strokeStyle = HexColor[state.color]
 
   // Game Master
   gameMastersList.innerHTML = ''
@@ -205,8 +233,12 @@ function update(newState) {
 
   // Players
   playersList.innerHTML = ''
-  for (const { name } of state.players) {
-    playersList.appendChild(h('li', { textContent: name }))
+  if (state.players.length < 1) {
+    playersList.appendChild(h('li', { class: 'empty', textContent: 'No one yet!' }))
+  } else {
+    for (const { color, name } of state.players) {
+      playersList.appendChild(h('li', { class: color, textContent: name }))
+    }
   }
 
   // Spectators
@@ -265,6 +297,14 @@ becomeGMButton.addEventListener('click', () => {
   send({ action: 'become-gm' })
 })
 
+startButton.addEventListener('click', () => {
+  send({ action: 'start', word: wordInput.value })
+})
+
+stopButton.addEventListener('click', () => {
+  send({ action: 'stop' })
+})
+
 quitGMButton.addEventListener('click', () => {
   send({ action: 'quit-gm' })
 })
@@ -273,6 +313,6 @@ quitGMButton.addEventListener('click', () => {
 // Initialization --------------------------------------------------------------
 
 context.lineWidth = 5
-context.strokeStyle = state.color
+context.strokeStyle = HexColor[state.color]
 
 tryToConnect()

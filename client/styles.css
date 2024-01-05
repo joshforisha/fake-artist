@@ -86,7 +86,9 @@ button {
     cursor: not-allowed;
     opacity: 0.5;
   }
+}
 
+button, #Players li {
   &.aqua {
     background-color: var(--aqua);
     color: var(--dark);
@@ -242,6 +244,7 @@ ul {
   background-color: var(--black);
   border-radius: var(--tiny);
   color: var(--white);
+  margin-bottom: var(--small);
   padding: 0 var(--small);
 }
 
@@ -267,6 +270,13 @@ ul {
     font-weight: 700;
     margin-left: calc(0px - var(--medium));
     margin-right: var(--medium);
+  }
+
+  &.empty {
+    background-color: transparent;
+    font-style: italic;
+    font-weight: 400;
+    padding: 0;
   }
 
   &:not(:first-of-type) {
