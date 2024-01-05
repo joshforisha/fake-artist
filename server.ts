@@ -24,6 +24,7 @@ const colors = [
   'yellow'
 ]
 
+let activeIndex = -1
 let category = ''
 let connections = []
 let isGameActive = false
@@ -47,7 +48,8 @@ function broadcast(data, filter) {
   for (const conn of connections) {
     if (!filter || filter(conn)) conn.socket.send(JSON.stringify({
       ...data,
-      color: conn.color
+      color: conn.color,
+      isActive: conn.isActive
     }))
   }
 }
@@ -78,16 +80,26 @@ function registerUser({ id, name, socket }) {
   // TODO: Check for number of joined players
   // TODO: Check for in-progress game
 
+  const role = isGameActive || roleUsers(Role.Player).length > 12
+    ? Role.Spectator
+    : Role.Player
+
   const color = 'gray'
-  connections.push({ color, id, role: Role.Player, name, socket })
+  const isActive = !isGameActive
+  connections.push({ color, id, isActive, role, name, socket })
 
   return {
     category,
     color,
     id,
+    isActive,
     shapes,
     ...users()
   }
+}
+
+function roleUsers(userRole) {
+  return connections.filter(({ role }) => role === userRole)
 }
 
 function scry(xs, pred) {
@@ -102,6 +114,18 @@ function setCategory({ id, value }) {
   return { category }
 }
 
+function shuffle(xs) {
+  const ys = [...xs]
+  let i = xs.length - 1
+  for (i; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    const y = ys[i]
+    ys[i] = ys[j]
+    ys[j] = y
+  }
+  return ys
+}
+
 function startGame({ id, word }) {
   // TODO: Ensure requesting user is the GM
   // TODO: Ensure there are enough players to play
@@ -109,13 +133,19 @@ function startGame({ id, word }) {
   isGameActive = true
   shapes = []
 
-  const colorPool = [...colors]
-  const fakeArtistId = chooseRandom(usersByRole(Role.Player)).id
+  const colorPool = shuffle(colors)
+  const players = roleUsers(Role.Player)
+  const fakeArtistId = chooseRandom(players).id
 
-  connections = connections.map((conn) => {
+  let orders = []
+  for (let i = 0; i < players.length; i++) orders[i] = i
+  orders = shuffle(orders)
+
+  connections = connections.map((conn, i) => {
     if (conn.role === Role.Player) {
       conn.role = conn.id === fakeArtistId ? Role.FakeArtist : Role.Artist
-      conn.color = takeRandom(colorPool)
+      conn.color = colorPool[i]
+      conn.order = orders[i]
     }
 
     return conn
@@ -133,8 +163,15 @@ function stopGame({ id }) {
   // TODO: Ensure requesting user is the GM
 
   isGameActive = false
+  connections = connections.map((conn) => {
+    conn.color = 'gray'
+    if (conn.role === Role.Artist || conn.role === Role.FakeArtist) {
+      conn.role = Role.Player
+    }
+    if (conn.order !== undefined) delete conn.order
+  })
 
-  return unassignGM(id)
+  return users()
 }
 
 function takeRandom(xs) {
@@ -163,21 +200,26 @@ function unregisterUser({ id }) {
 }
 
 function users() {
-  const [gms, others] = scry(connections, ({ role }) => role === Role.GM)
-  const [players, spectators] = scry(others, ({ role }) => role === Role.Player || role === Role.Artist || role === Role.FakeArtist)
-  const gameMaster = gms.at(0)
+  let gameMaster = connections.find(({ role }) => role === Role.GM)
+  if (gameMaster) gameMaster = extract('id', 'name')(gameMaster)
 
-  return {
-    gameMaster: gameMaster
-      ? { id: gameMaster.id, name: gameMaster.name }
-      : null,
-    players: players.map(({ color, name }) => ({ color, name })),
-    spectators: spectators.map(({ name }) => ({ name }))
-  }
-}
+  const players = connections
+    .filter(({ role }) =>
+      role === Role.Player ||
+      role === Role.Artist ||
+      role === Role.FakeArtist)
+    .sort((a, b) => {
+      if (isGameActive) return a.order < b.order ? -1 : 1
+      return a.name < b.name ? -1 : 1
+    })
+    .map(extract('color', 'name'))
 
-function usersByRole(userRole) {
-  return connections.filter(({ role }) => role === userRole)
+  const spectators = connections
+    .filter(({ role }) => role === Role.Spectator)
+    .sort((a, b) => a.name < b.name ? -1 : 1)
+    .map(({ name }) => name)
+
+  return { gameMaster, players, spectators }
 }
 
 

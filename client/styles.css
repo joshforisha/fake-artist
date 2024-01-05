@@ -39,26 +39,6 @@
   box-sizing: border-box;
 }
 
-/*
-.-aqua { color: var(--aqua) }
-.-black { color: var(--black) }
-.-blue { color: var(--blue) }
-.-fuchsia { color: var(--fuchsia) }
-.-gray { color: var(--gray) }
-.-green { color: var(--green) }
-.-lime { color: var(--lime) }
-.-maroon { color: var(--maroon) }
-.-navy { color: var(--navy) }
-.-olive { color: var(--olive) }
-.-orange { color: var(--orange) }
-.-purple { color: var(--purple) }
-.-red { color: var(--red) }
-.-silver { color: var(--silver) }
-.-teal { color: var(--teal) }
-.-white { color: var(--white) }
-.-yellow { color: var(--yellow) }
-*/
-
 *[data-hidden] {
   display: none;
 }
@@ -159,9 +139,9 @@ canvas {
   background-color: var(--white);
   border: var(--tiny) solid var(--gray);
   border-radius: var(--medium);
-  height: 640px;
+  height: 500px;
   transition: border-color var(--slow) ease-out;
-  width: 640px;
+  width: 500px;
 
   &.aqua { border-color: var(--aqua) }
   &.blue { border-color: var(--blue) }

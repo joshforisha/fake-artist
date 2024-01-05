@@ -10,46 +10,48 @@ const gamePage = $('section[data-page="game"]')
 const joinButton = $('#Join')
 const nameInput = $('#Name')
 const playersList = $('#Players')
+const quitGMButton = $('#QuitGM')
 const registrationForm = $('#RegistrationForm')
 const registrationPage = $('section[data-page="registration"]')
 const spectatorsList = $('#Spectators')
 const spectatorsTitle = $('#SpectatorsTitle')
 const startButton = $('#Start')
 const stopButton = $('#Stop')
-const quitGMButton = $('#QuitGM')
 const wordInput = $('#Word')
 
-// Globals
+const style = getComputedStyle(document.body)
 const HexColor = {
-  aqua: '#7fdbff',
-  black: '#111111',
-  blue: '#0074d9',
-  fuchsia: '#f012be',
-  gray: '#aaaaaa',
-  green: '#2ecc40',
-  lime: '#01ff70',
-  maroon: '#85144b',
-  navy: '#001f3f',
-  olive: '#3d9970',
-  orange: '#ff851b',
-  purple: '#b10dc9',
-  red: '#ff4136',
-  silver: '#dddddd',
-  teal: '#39cccc',
-  white: '#ffffff',
-  yellow: '#ffdc00'
+  aqua: style.getPropertyValue('--aqua'),
+  black: style.getPropertyValue('--black'),
+  blue: style.getPropertyValue('--blue'),
+  fuchsia: style.getPropertyValue('--fuchsia'),
+  gray: style.getPropertyValue('--gray'),
+  green: style.getPropertyValue('--green'),
+  lime: style.getPropertyValue('--lime'),
+  maroon: style.getPropertyValue('--maroon'),
+  navy: style.getPropertyValue('--navy'),
+  olive: style.getPropertyValue('--olive'),
+  orange: style.getPropertyValue('--orange'),
+  purple: style.getPropertyValue('--purple'),
+  red: style.getPropertyValue('--red'),
+  silver: style.getPropertyValue('--silver'),
+  teal: style.getPropertyValue('--teal'),
+  white: style.getPropertyValue('--white'),
+  yellow: style.getPropertyValue('--yellow')
 }
-const context = canvas.getContext('2d')
-let webSocket
 
-// Local state
+const context = canvas.getContext('2d')
+let reconnectDelay = 3000
 let drawing = false // Flag for drawing motion
 let points = [] // Points of local drawn stroke
+let webSocket
+
 const initialState = {
   category: '',
   color: 'gray',
   gameMaster: null,
   id: null,
+  isActive: false,
   players: [],
   shapes: [],
   spectators: [],
@@ -146,6 +148,7 @@ function show(...elements) {
 }
 
 function startDrawing(event) {
+  if (!state.isActive) return
   drawing = true
   context.beginPath()
   context.moveTo(event.offsetX, event.offsetY)
@@ -171,7 +174,8 @@ function tryToConnect() {
   webSocket.addEventListener('close', () => {
     hide(registrationPage, gamePage)
     state = initialState
-    setTimeout(tryToConnect, 3000)
+    reconnectDelay = Math.min(60_000, reconnectDelay + 3000)
+    setTimeout(tryToConnect, reconnectDelay)
   })
 
   webSocket.addEventListener('message', ({ data }) => {
@@ -181,13 +185,14 @@ function tryToConnect() {
   })
 
   webSocket.addEventListener('open', () => {
+    reconnectDelay = 3000
     enable(nameInput, joinButton)
     show(registrationPage)
     nameInput.focus()
 
     // FIXME (Temporary testing)
-    nameInput.value = 'Josh'
-    joinButton.click()
+    // nameInput.value = 'Josh'
+    // joinButton.click()
   })
 }
 
@@ -199,7 +204,8 @@ function update(newState) {
   categoryInput.value = state.category
 
   // Canvas
-  context.clearRect(0, 0, 640, 640)
+  const activeColor
+  context.clearRect(0, 0, 500, 500)
   for (const { color, points } of state.shapes) {
     context.strokeStyle = HexColor[color]
     context.beginPath()
